@@ -1,4 +1,4 @@
 MANIFEST
 MANIFEST.SKIP
 Makefile.PL
-lib/BM/API.pm
+lib/BrandMeister/API.pm

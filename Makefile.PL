@@ -2,8 +2,8 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile
 (
-	'NAME'		=>	'BM::API',
-	'VERSION_FROM'	=>	'lib/BM/API.pm',
+	'NAME'		=>	'BrandMeister::API',
+	'VERSION_FROM'	=>	'lib/BrandMeister/API.pm',
 	'PREREQ_PM'	=>	{
 		'LWP::UserAgent'	=>	0,
 		'JSON'			=>	0,

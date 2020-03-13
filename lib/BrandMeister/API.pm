@@ -1,6 +1,6 @@
 use strict;
 
-package BM::API;
+package BrandMeister::API;
 
 use LWP::UserAgent;
 use JSON;
@@ -36,7 +36,7 @@ sub new {
         return(0);
 	}
 	$self->{BM_APIBASEURL} = "https://api.brandmeister.network/v1.0/repeater/";
-	$self->{BM_APIKEYBASE64} = encode_base64($self->{BM_APIKEY};
+	$self->{BM_APIKEYBASE64} = encode_base64($self->{BM_APIKEY});
 	bless($self,$class);
 	return($self);
 };
@@ -51,7 +51,7 @@ sub _build_request {
                 GET => $uri
 	             );
     $req->header(   'Content-Type' => 'application/x-www-form-urlencoded',
-                    'Authorization'=>'Basic ' . $self->{BM_APIKEYBASE64})
+                    'Authorization'=>'Basic ' . $self->{BM_APIKEYBASE64}
             );
 	
 #$req->content( $json );
@@ -101,13 +101,12 @@ sub _do_action {
     my($req) = $self->_build_request->($requrlpart);
     my($res) = $self->_send_request($req);
     return($res);
-}
-    
+  
 };
 
 sub _action {
     my($self) = shift;
-    my($action) shift;
+    my($action) = shift;
     my($reqaction);
     my($ts,$tg) = @_;
     if ($action = 'delstatic') {
@@ -120,20 +119,21 @@ sub _action {
         return(1);
     };
     
-    return($self->_do_action($requrlpart));
+    return($self->_do_action($reqaction));
 
 };
 
 sub add_static_tg {
     my($self) = shift;
     my($ts,$tg) = shift;
-    return(1) if (($ts < 1 || $ts > 2) || !$tg || $tg = 9 || $tg = 8 || $tg = 6);
+    return(1) if (($ts < 1 || $ts > 2) || !$tg || $tg == 9 || $tg == 8 || $tg == 6);
     return($self->_action('addstatic'));
 };
 
 sub del_static_tg {
     my($self) = shift;
-    return(1) if (($ts < 1 || $ts > 2) || !$tg || $tg = 9 || $tg = 8 || $tg = 6);
+    my($ts,$tg) = shift;
+    return(1) if (($ts < 1 || $ts > 2) || !$tg || $tg == 9 || $tg == 8 || $tg == 6);
     return($self->_action('delstatic'));
 };
 
