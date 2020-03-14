@@ -5,7 +5,7 @@ package BrandMeister::API;
 use LWP::UserAgent;
 use JSON;
 use MIME::Base64;
-#use LWP::ConsoleLogger::Everywhere ();
+use LWP::ConsoleLogger::Everywhere ();
 
 =head1 NAME
 
@@ -98,7 +98,7 @@ sub json_response {
 sub _do_action {
     my($self) = shift;
     my($requrlpart) = shift;
-    my($req) = $self->_build_request->($requrlpart);
+    my($req) = $self->_build_request($requrlpart);
     my($res) = $self->_send_request($req);
     return($res);
   
@@ -119,8 +119,14 @@ sub _action {
         return(1);
     };
     
-    return($self->_do_action($reqaction));
+    $self->{LASTACTIONRES} = $self->_do_action($reqaction);
+    return(0);
 
+};
+
+sub result {
+    my($self) = shift;
+    return($self->{LASTACTIONRES});
 };
 
 sub add_static_tg {
