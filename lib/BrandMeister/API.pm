@@ -3,9 +3,11 @@ use strict;
 package BrandMeister::API;
 
 use LWP::UserAgent;
+use HTTP::Request::Common;
 use JSON;
 use MIME::Base64;
 use LWP::ConsoleLogger::Everywhere ();
+use Data::Dumper;
 
 =head1 NAME
 
@@ -36,7 +38,7 @@ sub new {
         return(0);
 	}
 	$self->{BM_APIBASEURL} = "https://api.brandmeister.network/v1.0/repeater/";
-	$self->{BM_APIKEYBASE64} = encode_base64($self->{BM_APIKEY});
+	$self->{BM_APIKEYBASE64} = encode_base64($self->{BM_APIKEY}.':');
 	bless($self,$class);
 	return($self);
 };
@@ -45,14 +47,13 @@ sub _build_request {
     my($self) = shift;
     #my($json) = shift;
     my($requrlpart) = shift;
+    my($formdataref) = shift;
     my($uri) = $self->{BM_APIBASEURL}.$requrlpart;
     print("Building HTTP request\n") if($self->{DEBUG});
-    my($req) = HTTP::Request->new(
-                GET => $uri
-	             );
+    my($req) = HTTP::Request::Common::POST( $uri,$formdataref);
     $req->header(   'Content-Type' => 'application/x-www-form-urlencoded',
-                    'Authorization'=>'Basic ' . $self->{BM_APIKEYBASE64}
-            );
+                   'Authorization'=>'Basic ' . $self->{BM_APIKEYBASE64}
+           );
 	
 #$req->content( $json );
     return($req);
@@ -65,6 +66,8 @@ sub _send_request {
     return(1) if (!$req);
     my($ua) = LWP::UserAgent->new;
     my($jsonresobj) = JSON->new;
+    print Data::Dumper->Dump([$req]);
+    #exit;
     my($res) = $ua->request($req);
     print('Request status line: '.$res->status_line."\n") if($self->{DEBUG}) ;
     if (!$res->is_success) {
@@ -98,7 +101,8 @@ sub json_response {
 sub _do_action {
     my($self) = shift;
     my($requrlpart) = shift;
-    my($req) = $self->_build_request($requrlpart);
+    my($formdataref) = shift;
+    my($req) = $self->_build_request($requrlpart,$formdataref);
     my($res) = $self->_send_request($req);
     return($res);
   
@@ -108,18 +112,27 @@ sub _action {
     my($self) = shift;
     my($action) = shift;
     my($reqaction);
+    my($formdataref);
     my($ts,$tg) = @_;
-    if ($action = 'delstatic') {
-        $reqaction = 'talkgroup/?action=DEL&id='.$self->{DMRID}.'&talkgroup='.$tg.'&timeslot='.$ts;
-    } elsif ($action = 'addstatic') {
-        $reqaction = 'talkgroup/?action=ADD&id='.$self->{DMRID}.'&talkgroup='.$tg.'&timeslot='.$ts;
-    } elsif ($action = 'dropdynamic') {
+    if ($action eq 'delstatic') {
+        $reqaction = 'talkgroup/?action=DEL&id='.$self->{DMRID};
+        $formdataref = [
+                            talkgroup   =>  $tg,
+                            timeslot    =>  $ts
+                ];
+    } elsif ($action eq 'addstatic') {
+        $reqaction = 'talkgroup/?action=ADD&id='.$self->{DMRID};
+        $formdataref = [
+                            talkgroup   =>  $tg,
+                            timeslot    =>  $ts
+                ];        
+     } elsif ($action eq 'dropdynamic') {
         $reqaction = 'setRepeaterTarantool.php?action=dropDynamicGroups&slot='.$ts.'&q='.$self->{DMRID};
     } else {
         return(1);
     };
-    
-    $self->{LASTACTIONRES} = $self->_do_action($reqaction);
+    print("\n\n$reqaction\n\n");
+    $self->{LASTACTIONRES} = $self->_do_action($reqaction,$formdataref);
     return(0);
 
 };
@@ -131,21 +144,22 @@ sub result {
 
 sub add_static_tg {
     my($self) = shift;
-    my($ts,$tg) = shift;
-    return(1) if (($ts < 1 || $ts > 2) || !$tg || $tg == 9 || $tg == 8 || $tg == 6);
-    return($self->_action('addstatic'));
+    my($ts,$tg) = @_;
+    #return(1) if (($ts < 1 || $ts > 2) || !$tg || $tg == 9 || $tg == 8 || $tg == 6);
+    return($self->_action('addstatic',$ts,$tg));
 };
 
 sub del_static_tg {
     my($self) = shift;
-    my($ts,$tg) = shift;
-    return(1) if (($ts < 1 || $ts > 2) || !$tg || $tg == 9 || $tg == 8 || $tg == 6);
-    return($self->_action('delstatic'));
+    my($ts,$tg) = @_;
+    #return(1) if (($ts < 1 || $ts > 2) || !$tg || $tg == 9 || $tg == 8 || $tg == 6);
+    return($self->_action('delstatic',$ts,$tg));
 };
 
 sub dropdynamic {
     my($self) = shift;
-    return($self->_action('dropdynamic'));
+    my($ts) = shift;
+    return($self->_action('dropdynamic',$ts));
 };
 
 1;
