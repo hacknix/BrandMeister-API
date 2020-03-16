@@ -25,9 +25,16 @@ Simon (G7RZU) <simon@gb7fr.org.uk>
 
 use vars qw($VERSION);
 #Define version
-$VERSION = '0.1';
+$VERSION = '0.2';
 
 =head1 METHODS
+
+=head2 new
+    
+my($bmobj) = BrandMeister::API->new({
+        BM_APIKEY  =>   '<api key>',
+        DMRID       => '<id>',
+    });
 
 =cut
 
