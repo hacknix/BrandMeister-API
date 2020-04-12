@@ -25,7 +25,7 @@ Simon (G7RZU) <simon@gb7fr.org.uk>
 
 use vars qw($VERSION);
 #Define version
-$VERSION = '0.2';
+$VERSION = '0.3';
 
 =head1 METHODS
 
