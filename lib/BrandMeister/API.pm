@@ -137,7 +137,7 @@ sub _action {
         return(1);
     };
     $self->{LASTACTIONRES} = $self->_do_action($reqaction,$formdataref);
-    return(0);
+    return($self->{LASTACTIONRES});
 
 };
 
